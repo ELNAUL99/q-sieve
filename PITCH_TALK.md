@@ -27,7 +27,7 @@ Here's the honest answer. People love to draw quantum as a curve that eventually
 
 **② The testbed, in one breath** 〔business, kept short〕
 
-The data is IBM's anti-money-laundering set — five million payments, about 388,000 flagged account-weeks, almost all of them innocent people. The bank already has something that flags. What it doesn't have is permission to *remove* work. So we built a trust layer that only clears an account when it's sure it's clean — it never accuses anyone, and it logs every call. And the quantum computer does exactly one job inside it: how similar are two account-weeks?
+The data is IBM's anti-money-laundering set — five million payments, about 388,000 flagged account-weeks, almost all of them innocent people. The bank already has something that flags. What it doesn't have is permission to *remove* work. And let's be clear about scope: we're not claiming to solve money-laundering, or even to clear the whole queue. We do one narrow, honest thing — take the flagged windows an analyst would clear by hand, and clear only the ones we're confidently sure are innocent, so the analyst spends their time on the genuinely uncertain ones. It only removes work. It never accuses. It logs every call. And the quantum computer does exactly one job inside it: how similar are two account-weeks?
 
 **③ Thirty seconds on how it works** 〔the math — makes everything after it land〕
 
@@ -129,3 +129,6 @@ Honestly, for this circuit there is no advantage and it is simulable. We chose i
 
 **"Features are the ceiling, so the quantum kernel is irrelevant — just do better features classically."**
 Agreed that better features lift everyone, and that is the near-term win, done classically. We are not claiming the quantum kernel is the business lever. We characterized it honestly: at the right bandwidth it is level with classical, and it runs on hardware. A research result, not a product claim.
+
+**"Aren't you overclaiming — this doesn't solve AML?"**
+Correct, and we never claim to. Our scope is deliberately narrow. We do not detect laundering, we do not replace the bank's flagging system, and we do not clear the whole queue. We take the windows that are already flagged and auto-clear only the ones we are confidently sure are innocent — removing analyst busywork so they spend time on the uncertain cases. A small, bounded, honest slice, not a global solution.
