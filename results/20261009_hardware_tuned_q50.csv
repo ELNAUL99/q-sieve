@@ -1,0 +1,7 @@
+config,bandwidth,device,vendor,qubits,circuits,shots,prauc_sim,prauc_hw,drop,drift,walltime_s,real
+untuned,1.0,q50,VTT,50,656,1024,0.111,0.100,0.011,0.018,358,yes
+untuned,1.0,garnet,IQM,20,656,1024,0.111,0.111,0.000,0.010,252,yes
+untuned,1.0,ibm_marrakesh,IBM,156,656,1024,0.111,0.111,0.000,0.007,613,yes
+tuned,0.1,garnet,IQM,20,1600,1024,0.231,0.183,0.049,0.040,607,yes
+tuned,0.1,ibm_fez,IBM,156,1600,512,0.231,0.216,0.016,0.080,252,yes
+tuned,0.1,q50,VTT,50,1600,1024,0.231,0.265,-0.033,0.116,1210,yes

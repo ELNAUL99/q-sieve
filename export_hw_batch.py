@@ -8,6 +8,7 @@ circuits) to fit a tight hardware budget.
 Run:  .venv/Scripts/python.exe export_hw_batch.py   -> data/hw_batch.json
 """
 
+import argparse
 import json
 
 import numpy as np
@@ -27,15 +28,22 @@ OUT = "data/hw_batch.json"
 
 
 def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--bandwidth", type=float, default=1.0, help="scale the angles by c (kernel bandwidth)")
+    p.add_argument("--n-train", type=int, default=N_TRAIN)
+    p.add_argument("--n-test", type=int, default=N_TEST)
+    p.add_argument("--out", default=OUT)
+    args = p.parse_args()
+
     X, y, _, source = load_features()
     Xtr, Xte, ytr, yte = split(X, y)
-    Xtr, ytr = cap_train(Xtr, ytr, cap=N_TRAIN, seed=0)
-    Xte, yte = cap_train(Xte, yte, cap=N_TEST, seed=0)
+    Xtr, ytr = cap_train(Xtr, ytr, cap=args.n_train, seed=0)
+    Xte, yte = cap_train(Xte, yte, cap=args.n_test, seed=0)
 
     sel = SelectKBest(f_classif, k=D_HW).fit(Xtr, ytr)
     scaler = MinMaxScaler((0, np.pi)).fit(sel.transform(Xtr))
-    Atr = np.clip(scaler.transform(sel.transform(Xtr)), 0, np.pi)
-    Ate = np.clip(scaler.transform(sel.transform(Xte)), 0, np.pi)
+    Atr = np.clip(scaler.transform(sel.transform(Xtr)), 0, np.pi) * args.bandwidth
+    Ate = np.clip(scaler.transform(sel.transform(Xte)), 0, np.pi) * args.bandwidth
 
     kernel = kernels.fixed_kernel("angle", D_HW, reps=1)
     svc = SVC(kernel="precomputed", class_weight="balanced").fit(kernel.evaluate(Atr), ytr.values)
@@ -45,7 +53,7 @@ def main():
     exact_prauc = float(average_precision_score(yte, exact_dec))
 
     batch = {
-        "d": D_HW, "encoding": "angle", "source": source,
+        "d": D_HW, "encoding": "angle", "source": source, "bandwidth": args.bandwidth,
         "sv_angles": Atr[sv].tolist(),
         "dual": svc.dual_coef_[0].tolist(),
         "intercept": float(svc.intercept_[0]),
@@ -54,12 +62,13 @@ def main():
         "exact_decision": exact_dec.tolist(),
         "exact_prauc": exact_prauc,
     }
-    json.dump(batch, open(OUT, "w"))
+    json.dump(batch, open(args.out, "w"))
     n_circ = len(sv) * len(Ate)
-    print(f"source={source} | qubits={D_HW} | support vectors={len(sv)} | test={len(Ate)}")
+    print(f"source={source} | qubits={D_HW} | bandwidth={args.bandwidth} | "
+          f"support vectors={len(sv)} | test={len(Ate)}")
     print(f"hardware circuits needed: {len(sv)} x {len(Ate)} = {n_circ}")
     print(f"exact (simulator) PR-AUC: {exact_prauc:.3f}")
-    print(f"wrote {OUT}")
+    print(f"wrote {args.out}")
 
 
 if __name__ == "__main__":

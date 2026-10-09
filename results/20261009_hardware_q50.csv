@@ -1,0 +1,4 @@
+backend,vendor,qubits,prauc_sim,prauc_hw,drop,drift,real
+ibm_marrakesh,IBM,156,0.111,0.111,0.000,0.007,yes
+garnet,IQM,20,0.111,0.111,0.000,0.010,yes
+q50,VTT,50,0.111,0.100,0.011,0.018,yes

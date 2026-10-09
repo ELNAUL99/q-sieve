@@ -145,6 +145,210 @@ drift vs 0.032 modeled). Quantum is still < tuned XGBoost (0.190), but the
 quantum result is now **hardware-validated on real metal, twice over**. This is
 the credibility slide. (Both devices enforce a 100-circuit/job limit → 7 jobs.)
 
+## 6 · REAL HARDWARE — VTT Q50, third vendor (2026-10-09) ⭐⭐⭐
+
+**Conditions:** same frozen angle-kernel batch as #5 (`data/hw_batch.json`, 6
+qubits, test × support-vector overlap circuits, 1024 shots), run on the **real
+VTT Q50** via LUMI (SLURM job on the `small` partition, QPU submitted through the
+LUMI-Q interface). Wall time 358 s (most of it QPU-queue polling).
+
+| backend | vendor | qubits | PR-AUC sim → hw | drop | drift |
+|---|---|---|---|---|---|
+| ibm_marrakesh (REAL) | IBM | 156 | 0.111 → 0.111 | 0.000 | 0.007 |
+| Garnet (REAL) | IQM | 20 | 0.111 → 0.111 | 0.000 | 0.010 |
+| **Q50 (REAL)** | **VTT** | **50** | 0.111 → **0.100** | **+0.011** | **0.018** |
+
+**vs last time:** third real QPU, third vendor. Q50 is the **first real chip
+where hardware noise visibly touches the result** — drift 0.018 (2–3× IBM/Garnet)
+and a 0.011 PR-AUC drop. **Finding:** even on the noisiest of the three devices,
+the shallow angle encoding (depth 2, 0 two-qubit gates) only costs one PR-AUC
+point, and 0.100 is still above the ~0.093 floor. Note Q50's *real* drift (0.018)
+lands between the earlier **Q50 noise-model** guess (0.033, entry #5) and the
+clean chips — the model over-stated it, consistent with #2's "models are
+optimistic/pessimistic, trust the metal" caveat. Degradation report is now
+**three vendors: two zero-drop, one −0.011.**
+
+## 7 · Hybrid cascade — classic-first, quantum-enhance (2026-10-09)
+
+**Conditions:** `hybrid.py`. XGBoost scores every test window; the **ambiguous**
+slice — classical P(suspicious) within ±0.15 of 0.5 — is re-scored by the angle
+QSVM and folded back inside the band. Confident classical calls are untouched.
+Real data, `train_cap=200`, `test_cap=3000`, seed 0 (single seed).
+
+**Result**
+
+| stage | PR-AUC | FP-elim @90% rec |
+|---|---|---|
+| classical (XGBoost) alone | 0.198 | 21.7% |
+| + quantum-enhanced ambiguous slice | 0.196 | 21.7% |
+
+93 of 3,000 windows were ambiguous (24 of them suspicious) → routed to the QSVM.
+
+**vs last time:** first hybrid run, and the last lever we hadn't pulled. **Finding:**
+sending only the *uncertain* windows to the quantum kernel does **not** beat
+classical alone (−0.002, inside the noise band). This confirms the benchmark from
+the architecture side: the quantum kernel holds no signal the tree is missing on
+this feature set. "Classical-first, quantum-enhanced" is a sound, swappable design
+— it just doesn't move the number on HI-Small today. **Features remain the ceiling.**
+
+## 8 · Bandwidth tuning — quantum pulls LEVEL with the tree (2026-10-09) ⭐
+
+**Conditions:** `improve.py` / `improve_verify.py`. Angle encoding, real data,
+`train_cap=200`, **identical splits for every model**, seed-averaged. Bandwidth
+`c` = a global multiplier on the [0,π] encoding angles (c=1 = the old baseline);
+smaller c fights the fidelity kernel's exponential concentration (Shaydulin &
+Wild 2021). Projected QK = per-qubit ⟨X⟩,⟨Y⟩,⟨Z⟩ expectations → classical RBF
+(Huang et al. 2021).
+
+**Result (`improve_verify.py`, 5 seeds, test=3000, same splits):**
+
+| method | PR-AUC |
+|---|---|
+| **angle c=0.15** | **0.184 ± 0.042** |
+| angle c=0.10 | 0.181 ± 0.051 |
+| angle c=0.05 | 0.173 ± 0.049 |
+| **XGBoost (tuned)** | **0.167 ± 0.030** |
+| angle c=0.20 | 0.159 ± 0.043 |
+| angle c=0.30 | 0.152 ± 0.038 |
+| projected QK | 0.137 ± 0.015 |
+| **angle c=1.0 (OLD baseline)** | **0.115 ± 0.017** |
+| RBF (tuned) | 0.097 ± 0.009 |
+
+**vs last time (the big correction):** the benchmark (#3) ran the quantum kernel at
+bandwidth **c=1 ([0,π]), where the fidelity kernel concentrates** → 0.115–0.125.
+Shrinking the angles to **c≈0.1–0.15** lifts it to **~0.18 — statistically level
+with the tuned XGBoost tree (0.167)**: overlapping error bars, mean marginally
+above. The projected kernel gives a tighter (±0.015) lift to 0.137.
+**Caveats:** (1) small-c variance is high (±0.04–0.05) → this is a **tie, not a
+win**; (2) same-split XGBoost here is 0.167, below the deck's 3-seed 0.190 —
+classical is itself noisy at train=200. Scaling sweep #4 under-explored this
+(stopped at c=0.5). **Revised headline: once the quantum kernel's bandwidth is
+tuned, quantum and classical are statistically indistinguishable on HI-Small —
+the earlier "classical clearly wins" was partly an untuned-bandwidth artifact.**
+
+## 9 · Encoding × bandwidth — angle stays best, even tuned (2026-10-09)
+
+**Conditions:** `encoding_bandwidth.py`. Angle vs ZZ-linear, each swept across
+bandwidth `c`, same splits, 3 seeds, test=1500. (Amplitude excluded — it
+normalises the state, so bandwidth has no effect.)
+
+**Result:**
+
+| encoding @ best c | PR-AUC | at c=1.0 (old) |
+|---|---|---|
+| **angle c=0.05–0.1** | **0.23 ± 0.05** | 0.131 |
+| ZZ-linear c=0.05 | 0.21 ± 0.04 | 0.117 |
+| XGBoost (ref) | 0.21 ± 0.03 | — |
+| RBF | 0.104 | — |
+
+**Finding (answers "did we bandwidth-tune other encodings?"):** no, we hadn't —
+and doing it now lifts **both** encodings (the encoding sweep #1 judged them all at
+the crippling c=1). But **angle stays the best encoding even when ZZ is
+bandwidth-tuned** (0.23 vs 0.21), and ZZ **concentrates faster** — peak at c=0.05,
+collapsed by c=0.1 — as the entangling-gate theory predicts. So the angle pick is
+vindicated twice: best simulator score **and** the only NISQ-safe encoding (0
+two-qubit gates). **Caveat:** small-c variance is high and test-size-sensitive —
+this 3-seed/1500 run reads ~0.23; the stricter 5-seed/3000 verify (#8) reads ~0.18.
+Use the conservative **~0.18 = level with the tree**, never the rosy 0.23.
+
+## 10 · No-trial-and-error bandwidth + noise-model check + FPR (2026-10-09)
+
+Three questions settled: (a) can we pick bandwidth *without* sweeping? (b) does
+the tuned kernel survive hardware noise? (c) what is our FPR, really?
+
+**(a) Principled bandwidth selection** (`bandwidth_select.py`, 3 seeds, angle, 12q):
+
+| selector | predicted c* | PR-AUC there | verdict |
+|---|---|---|---|
+| **Geometric rule `1/√(n·d)`** | **0.083** | **0.232** | ✅ lands on the true peak (c=0.08 → 0.232) |
+| Kernel-Target Alignment (KTA) | 1.000 | 0.131 | ❌ picked the worst bandwidth |
+
+**Finding:** the **geometric rule nails it analytically — zero compute, no sweep**
+(answers Meeri's "mostly trial-and-error"). **KTA failed** on this data: with 9.3%
+prevalence the `yyᵀ` target is dominated by negative-negative pairs, so centered
+alignment doesn't track what the SVM uses (it rose monotonically toward c=1, the
+opposite of PR-AUC). Would need an imbalance-weighted KTA; not worth it when the
+geometric rule already hits the optimum. **Use `c = 1/√(n·d)` as the default.**
+
+**(b) Noise-model check** (`export_hw_batch --bandwidth` → `hardware_batch --backend
+apollo`, 6 qubits, 40 test, NO credits):
+
+| config | sim PR-AUC | Apollo (noisy) | drift |
+|---|---|---|---|
+| c=1.0 (old) | 0.135 | 0.135 | 0.021 |
+| c=0.1 (tuned) | 0.292 | 0.314 | **0.256** |
+
+**Finding:** the bandwidth gain **survives the noise model** (0.31 vs 0.14). Drift is
+huge (0.256 ≈ the 6-qubit readout floor) because at small c all overlaps sit near 1
+and readout noise drags them down *uniformly* — and a uniform shift **cancels** in
+the SVM decision (`Σ dual = 0`), so the ranking/PR-AUC is preserved. **Caveats:**
+fake models understate real noise; margin is thin (at the floor); c=0.1 is
+near-degenerate (all 80 train points became support vectors → 3,200 circuits,
+~2× the c=1 cost).
+
+**(c) FPR trade-off** (`fpr_tradeoff.py`, test=3000, prevalence 9.3%):
+
+| operating point | XGBoost FPR | quantum c=0.1 FPR | precision | recall |
+|---|---|---|---|---|
+| @ 90% recall | 80.8% | 83.4% | ~10% | 90% |
+| @ ~77% precision | 0.1% | 0.1% | ~77% | 2.5% |
+
+**Finding:** FPR is meaningless without recall. FD4QC's headline "QSVM FPR 1.36% @
+77% precision" is a **low-recall** point — and at that same precision *our* FPR is
+~0.1% with recall ~2.5%. Any model hits ~1% FPR by barely flagging anything; the
+real question is FPR *at a useful recall*, where everything is ~80%+ (feature
+ceiling). The low-FPR "auto-clear" framing is the right **product** story, but it is
+**not** a quantum-specific win here — quantum ≈ classical at matched points.
+
+## 11 · REAL HARDWARE — bandwidth-tuned kernel on 3 QPUs: Q50 + Garnet + IBM (2026-10-09) ⭐⭐⭐
+
+**Conditions:** the **bandwidth-tuned** frozen batch (`export_hw_batch --bandwidth
+0.1 --n-train 40 --n-test 40`): 6 qubits, 40 support vectors × 40 test = **1,600
+circuits**, 1,024 shots, on the **real VTT Q50** via LUMI (`run_q50.sh`). Wall time
+**1,210 s** (~20 min). This is the FIRST real-hardware run of the *improved* config
+(entries #5–6 were the untuned c=1 batch).
+
+| config | device | PR-AUC sim → hw | drop | drift | circuits |
+|---|---|---|---|---|---|
+| c=1.0 (untuned) | Q50 | 0.111 → 0.100 | +0.011 | 0.018 | 656 |
+| c=1.0 (untuned) | Garnet | 0.111 → 0.111 | 0.000 | 0.010 | 656 |
+| **c=0.1 (tuned)** | **Garnet** | **0.231 → 0.183** | **+0.049** | **0.040** | 1,600 |
+| **c=0.1 (tuned)** | **ibm_fez** | **0.231 → 0.216** | **+0.016** | **0.080** | 1,600 (512 shots) |
+| **c=0.1 (tuned)** | **Q50** | **0.231 → 0.265** | **−0.033** | **0.116** | 1,600 |
+
+**Finding:** the bandwidth-tuned kernel **survives real Q50 hardware with no
+degradation** — hardware PR-AUC (0.265) matches/slightly exceeds the simulator
+baseline (0.231). The negative drop is within the noise of a 40-point test (read as
+"held," not "improved"). Drift rose to **0.116** (~6× the c=1 runs) because the
+small-angle kernel has less contrast and sits nearer the readout floor — **but the
+score holds**, because readout noise is ~uniform and cancels in the SVM decision
+(`Σ dual = 0`). Real-Q50 drift (0.116) came in **well below** the Apollo noise-model
+guess (0.256), consistent with #2/#6: models are pessimistic, trust the metal.
+**Directionally, bandwidth tuning roughly doubled the real-hardware score on Q50
+(0.100 → 0.265)** — though the two batches differ (16- vs 40-test, c=1 baseline
+0.111 vs tuned 0.231), so treat it as a strong directional result, not a strict
+apples-to-apples.
+
+**Three-vendor result:** the tuned kernel ran on **all three real QPUs**:
+Garnet 0.183 (drop +0.049, drift 0.040, 606.9 s), ibm_fez 0.216 (drop +0.016,
+drift 0.080, 251.8 s, 512 shots, single job), Q50 0.265 (drop −0.033, drift 0.116,
+1,210 s). The three hardware scores **straddle** the sim baseline —
+`0.183 < 0.216 < 0.231(sim) < 0.265` — averaging **0.221 ≈ 0.231**, i.e. **"held on
+average" across three vendors**. IBM was the cleanest (closest to sim, −0.016).
+**What we learned:** (1) the tuned kernel is hardware-viable on 3 vendors, not a sim
+artifact; (2) but it is **noisier than the untuned c=1 config** (which landed
+0.100/0.111 — near-identical on both chips) — the price of the smaller-contrast
+kernel sitting nearer the readout floor (drift 0.04–0.12 vs 0.007–0.018 at c=1);
+(3) **drift does not predict PR-AUC at this test size** — Garnet had the lowest
+drift (0.040) yet the biggest drop, because with 40 test points PR-AUC noise (±0.05)
+dominates; (4) the score survives because readout noise is ~uniform and cancels in
+the SVM decision (`Σ dual = 0`), but that cancellation is device-dependent (clean on
+Q50, partial on Garnet). **Defensible claim:** the robust hardware story is still
+the **c=1 config** (near-zero drift, 3 vendors). The **tuned config is "runs and
+holds on average on 3 QPUs"** — promising, honestly noisier, and under-powered (would
+need more test points/seeds to tighten, which costs hardware time). **Caveats:**
+single seed; 40 test points → noisy PR-AUC; IBM at 512 shots (others 1,024).
+
 ---
 
 ## Noise — how each encoding survives hardware
@@ -182,7 +386,12 @@ Q20 may still be safer — not claimable from models alone.
 ## Running takeaways
 
 1. **Features are the ceiling** — scaling/encoding/training move within/near the noise band.
-2. **Honest headline:** *tuned* classical (XGBoost 0.190) wins on HI-Small; quantum
-   angle (0.125) is real signal (> RBF, > random) but behind the tree.
-3. **Hardware:** angle encoding — the only cleanly NISQ-suitable option.
+2. **Honest headline (updated #8):** at the *right bandwidth* (c≈0.1–0.15) the
+   quantum angle kernel reaches ~0.18, **statistically level with tuned XGBoost
+   (~0.17)** — a tie within noise, not a win. The old "classical clearly wins
+   (0.190 vs 0.125)" compared a *tuned* tree against an *untuned-bandwidth* kernel.
+3. **Encoding:** angle wins **twice** — best simulator score even vs a
+   bandwidth-tuned ZZ (#9), *and* the only cleanly NISQ-suitable option;
+   **validated on 3 real QPUs / 3 vendors** (IBM, IQM, VTT) — two zero-drop,
+   Q50 −0.011 (drift 0.018). Shallow encoding holds even on the noisiest chip.
 4. **Open lever:** distribution-shaping scalers (sweep #4).

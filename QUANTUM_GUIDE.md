@@ -48,15 +48,18 @@ Needs `IBM_QUANTUM_TOKEN` + `IBM_QUANTUM_CRN` in `.env`.
 ## 5. The degradation report
 For the frozen config, report simulator PR-AUC vs hardware PR-AUC + kernel drift.
 
-**Result (two vendors, zero degradation):**
-| Device | PR-AUC sim → hw | drift |
-|---|---|---|
-| IQM Garnet (20q) | 0.111 → 0.111 | 0.010 |
-| IBM marrakesh (156q) | 0.111 → 0.111 | 0.007 |
+**Result (three real QPUs, three vendors):**
+| Device | PR-AUC sim → hw | drop | drift |
+|---|---|---|---|
+| IBM marrakesh (156q) | 0.111 → 0.111 | 0.000 | 0.007 |
+| IQM Garnet (20q) | 0.111 → 0.111 | 0.000 | 0.010 |
+| VTT Q50 (50q) | 0.111 → 0.100 | +0.011 | 0.018 |
 
-Angle encoding is shallow enough that neither chip's noise touches the result.
-The hardware batch uses 6 features (6 qubits) to keep the readout noise low — the
-full 12-feature model is for the simulator benchmark.
+Two vendors show zero degradation; the noisiest chip (VTT Q50, drift 0.018 — 2–3×
+the others) costs just one PR-AUC point and still clears the ~0.093 floor. Angle
+encoding (depth 2, zero two-qubit gates) is shallow enough that even Q50's noise
+barely moves it. The hardware batch uses 6 features (6 qubits) to keep readout
+noise low — the full 12-feature model is for the simulator benchmark.
 
 ## Pipeline to produce the hardware batch
 ```powershell
