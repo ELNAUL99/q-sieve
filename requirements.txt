@@ -1,0 +1,10 @@
+qiskit
+qiskit-machine-learning
+qiskit-aer
+scikit-learn
+pandas
+numpy
+matplotlib
+xgboost
+streamlit
+python-dotenv

@@ -1,0 +1,5 @@
+backend,vendor,qubits,circuits,shots,jobs,runtime_s,sim_prauc,hw_prauc,prauc_drop,kernel_drift
+garnet,IQM,20,656,1024,7,252.3,0.111,0.111,0.000,0.010
+ibm_marrakesh,IBM,156,656,1024,7,612.9,0.111,0.111,0.000,0.007
+apollo(model),IQM-sim,20,656,1024,7,11.8,0.111,0.100,0.011,0.032
+aphrodite(model),IQM-sim,54,656,1024,7,12.9,0.111,0.100,0.011,0.033
