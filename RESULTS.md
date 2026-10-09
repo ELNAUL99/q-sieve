@@ -313,8 +313,10 @@ circuits**, 1,024 shots, on the **real VTT Q50** via LUMI (`run_q50.sh`). Wall t
 | c=1.0 (untuned) | Q50 | 0.111 → 0.100 | +0.011 | 0.018 | 656 |
 | c=1.0 (untuned) | Garnet | 0.111 → 0.111 | 0.000 | 0.010 | 656 |
 | **c=0.1 (tuned)** | **Garnet** | **0.231 → 0.183** | **+0.049** | **0.040** | 1,600 |
-| **c=0.1 (tuned)** | **ibm_fez** | **0.231 → 0.216** | **+0.016** | **0.080** | 1,600 (512 shots) |
 | **c=0.1 (tuned)** | **Q50** | **0.231 → 0.265** | **−0.033** | **0.116** | 1,600 |
+| **c=0.1 (tuned)** | **ibm_fez** | **0.231 → 0.395** | **−0.164** | **0.033** | 1,600 |
+
+*(All three tuned runs are full 1,024 shots. An earlier IBM 512-shot stopgap, 0.216, is dropped.)*
 
 **Finding:** the bandwidth-tuned kernel **survives real Q50 hardware with no
 degradation** — hardware PR-AUC (0.265) matches/slightly exceeds the simulator
@@ -348,6 +350,24 @@ the **c=1 config** (near-zero drift, 3 vendors). The **tuned config is "runs and
 holds on average on 3 QPUs"** — promising, honestly noisier, and under-powered (would
 need more test points/seeds to tighten, which costs hardware time). **Caveats:**
 single seed; 40 test points → noisy PR-AUC; IBM at 512 shots (others 1,024).
+
+**UPDATE — IBM full-shot run exposes the tuned config's instability (2026-10-10):**
+re-ran the identical tuned batch on **ibm_fez at 1,024 shots** (482.7 s): sim 0.231
+→ **0.395**, drift **0.033**. A hardware PR-AUC *above the noiseless simulator* cannot
+be a real signal — it is noise that happened to reorder the 40 test points
+favorably. **The tell:** drift is *low* (0.033, kernel barely perturbed) yet PR-AUC
+swung huge, because the tuned batch is **near-degenerate — all 40 training points
+are support vectors**, so the SVM's large, opposing dual coefficients *amplify* tiny
+readout noise into big decision swings (`noise · dual` has high variance even when
+each kernel entry is close). Same batch, three full-shot runs (one per vendor)
+scatter **0.183 / 0.265 / 0.395** around sim 0.231 — a **0.18–0.40 spread**. **Revised conclusion:** the
+tuned config's hardware PR-AUC is **noise-dominated at this scale — do NOT report a
+single tuned-hardware number (or an "average") as a result.** The honest, stable
+hardware validation is the **robust c=1 config** (0.111→0.111 on 3 vendors, drift
+0.007–0.018). The tuned run is a *finding about fragility*: aggressive bandwidth
+tuning buys simulator score but makes the on-device readout unstable. **This
+supersedes the "held on average 0.221" line above — that used the 512-shot IBM run;
+the full-shot run breaks it.**
 
 ---
 

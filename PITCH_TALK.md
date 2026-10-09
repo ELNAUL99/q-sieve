@@ -11,7 +11,7 @@ Numbers you may say out loud, and the ones you must not upgrade:
 - After bandwidth, same splits, 5 seeds, 3,000 test windows: quantum **0.18 ± 0.04**, tree **0.17 ± 0.03**. A **tie**. Never "quantum wins."
 - Do not quote **0.23**. That is a smaller 1,500-window run. The number to defend is 0.18.
 - Untuned hardware, 6 qubits, 656 circuits: Garnet **0.111 → 0.111**, IBM Marrakesh **0.111 → 0.111**, Q50 **0.111 → 0.100** (drift 0.018, 358 s).
-- Tuned hardware, c=0.1, 1,600 circuits, simulator **0.231**: Garnet **0.183**, IBM Fez **0.216**, Q50 **0.265**. Average **0.221**. Say "held on average." Do not say Q50 improved the score.
+- Tuned hardware, c=0.1, simulator **0.231**: three full-shot runs (one per vendor) **scatter** 0.183 / 0.265 / **0.395** — the IBM 0.395 is *above* the noiseless sim. Do **not** average these or say "held" — the tuned config is **noise-dominated / unstable** on hardware. The reliable hardware result is the **robust c=1 config** above.
 - Safe auto-clear at ≤1% error: **0%** for both. The queue is not cleared today.
 - Speed: the tree is **faster** — ~0.1 s vs ~18 s for the kernel on 3,000 windows; a real chip takes minutes. Quantum is slower. Say it before they ask.
 
@@ -43,7 +43,9 @@ Then we found it. Remember the bandwidth — how far we rotate? Ours was wrong. 
 
 **⑥ Three real machines** 〔quantum used in practice〕
 
-But a simulator tie is cheap. So this weekend we put that kernel on three real quantum computers — IQM's Garnet, IBM, and VTT's own Q50 — and we did it properly: simulator, then noise model, then the chip, so we never spent device time on a guess. On the quiet six-qubit config, Garnet and IBM reproduced the simulator exactly — 0.111 to 0.111 — and Q50 moved it by a single point. On the tuned kernel, the three chips average right back onto the simulator: 0.22 against 0.23. It held on average, across three vendors. It runs — today — on real metal.
+But a simulator tie is cheap. So we put the kernel on three real quantum computers — Garnet, IBM, and VTT's Q50 — properly: simulator, then noise model, then the chip. The **robust** six-qubit config held rock-solid — Garnet and IBM reproduced the simulator *exactly*, 0.111 to 0.111, Q50 off by a single point, near-zero drift on all three. That's the hardware result we trust.
+
+And here's the honest part. We also pushed the aggressive bandwidth-tuned kernel onto hardware — and its score bounced from 0.18 all the way to 0.40 across the three vendors. The IBM run even came back *above* the noiseless simulator, which is impossible for a real signal. We traced it: the tuned model is near-degenerate, so tiny readout noise gets amplified into huge swings. That's not a failure to hide — it's the finding. Aggressive tuning buys simulator score and costs you stability on the metal. The robust config is the one that runs.
 
 **⑦ The demo** 〔the live product〕
 
@@ -80,8 +82,11 @@ Because the queue does not shrink at the safe threshold. The work that will surv
 **"Is 1 over square-root of n-d your invention?"**
 No. Bandwidth and concentration are Shaydulin and Wild. What we showed on this dataset is that the geometric rule lands on the measured peak, and kernel-target alignment does not, because of the class imbalance. We report the selector that failed.
 
-**"Did hardware really match, or did Q50 get lucky at 0.265?"**
-Treat 0.265 as noise. Forty test points, one seed. The three hardware scores are 0.183, 0.216 and 0.265 around a simulator of 0.231. The average is 0.22. The clean statement is "held on average." The configuration with almost no drift is the untuned one: Garnet and IBM identical, Q50 down 0.011.
+**"Did the tuned kernel really hold on hardware?"**
+No, and we say so. The same tuned batch gave 0.183, 0.265 and 0.395 across the three vendors, around a simulator of 0.231. One IBM run landed *above* the noiseless simulator, which is impossible for a real signal — it is noise. The tuned model is near-degenerate, every point a support vector, so tiny readout noise is amplified by large dual coefficients into big PR-AUC swings; the kernel drift stays low, 0.033, while the score flies. The reliable hardware result is the robust config: Garnet and IBM reproduce the simulator exactly, 0.111 to 0.111, Q50 down 0.011, drift 0.007 to 0.018.
+
+**"Isn't the big 156-qubit IBM chip just noisier?"**
+Our data says the opposite. We use six physical qubits on every device, so the total size does not add noise to our circuit — the other 150 sit idle. Measured drift: Garnet at 20 qubits 0.040, Q50 at 50 qubits 0.116, IBM at 156 qubits 0.033. The largest device was the cleanest. What matters is the calibration and readout fidelity of the six qubits we actually use, not the chip size. So the 0.395 swing is model degeneracy, not device noise.
 
 **"Why only six qubits when the model has twelve features?"**
 The kernel entry is the all-zero shot rate. At six qubits an identical pair already comes back around 0.74 instead of 1. That 0.26 is readout, and it barely changes with circuit depth. Twelve qubits would push that floor toward 0.5, so we would be ranking readout noise. The twelve-feature model stays on the simulator. Hardware keeps the six strongest features.
@@ -109,3 +114,18 @@ Not the decision. A fidelity. Two windows become angles, the overlap circuit run
 
 **"Show me the demo."**
 Open the dashboard. It is the real feature table: the rank, the calibration, and an audit line per alert. The hardware table is the other half of the demo: the same frozen batch on three machines.
+
+**"This does nothing for a real business. Why should finance care?"**
+Nothing today — correct. The most useful thing we can give a finance decision-maker is the honest truth about where quantum stands on their problem, so they invest at the right time instead of chasing hype. A rigorous "not yet, here is how close and why" de-risks a decision worth millions. That is the value, and it is real.
+
+**"It is all theoretical — a feasibility study."**
+Yes. And in 2026 almost all quantum work is, including the work at the companies on this panel. We did honest frontier characterization on real financial data and real hardware. The event asks for technical implementation using quantum, not a shipped product. Feasibility done rigorously is the deliverable. "Theoretical" is foundational — the honest first step before anyone should spend money.
+
+**"A laptop simulates six qubits instantly — why run on a QPU at all?"**
+For this circuit the QPU was not necessary; a laptop does it. We ran it for three reasons: to prove the full pipeline executes on real machines (de-risking the integration for the day advantage exists), to learn which configurations survive real noise (you can only confirm that on metal — the robust one does, the tuned one does not), and for credibility over a simulator-only claim. Feasibility and characterization, not a necessity claim.
+
+**"Angle encoding with no entanglement is classically simulable — so is this even quantum?"**
+Honestly, for this circuit there is no advantage and it is simulable. We chose it because it is the only NISQ-robust option. The chip genuinely computed the fidelities; our contribution is the honest benchmark and the hardware characterization, not a claim that this circuit is classically hard. Advantage would live in deeper, structured circuits on better hardware — future work, stated as future work.
+
+**"Features are the ceiling, so the quantum kernel is irrelevant — just do better features classically."**
+Agreed that better features lift everyone, and that is the near-term win, done classically. We are not claiming the quantum kernel is the business lever. We characterized it honestly: at the right bandwidth it is level with classical, and it runs on hardware. A research result, not a product claim.
