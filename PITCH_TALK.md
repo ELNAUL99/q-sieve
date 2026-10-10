@@ -35,7 +35,7 @@ The fair fight first. The tuned classical tree scores 0.19; our quantum kernel, 
 Then we found it. The features were rotations across the full range — so every pair of windows looked equally different, and the kernel went blind. That range is the bandwidth. We shrank it: the kernel jumped from 0.12 to 0.18, level with the tree's 0.17. A tie, within noise; not a win. We swept to find it, then showed a rule — one over root n times d — predicts it exactly. We *derive* the setting instead of guessing. That's the innovation.
 
 **⑥ Three real machines**
-A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held rock-solid: identical to simulation, near-zero drift. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
+A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held rock-solid: Garnet and IBM reproduced the simulator exactly, Q50 off a single point, near-zero drift on all three. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
 
 **⑦ The demo**
 And it's live — a working trust layer: ranked queue, auto-clear, an audit line per decision, and the three-machine table. Real data.

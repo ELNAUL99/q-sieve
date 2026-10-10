@@ -30,22 +30,23 @@ ax.set_ylabel("PR-AUC"); ax.set_title("The honest benchmark: classical wins — 
 ax.spines[["top", "right"]].set_visible(False)
 save(fig, "01_benchmark.png")
 
-# 2 — bandwidth changes everything (the discovery)
-c = [0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.22,0.24,0.26,0.28,0.30,0.40,0.50,0.75,1.00]
-p = [0.218,0.222,0.221,0.232,0.231,0.223,0.232,0.230,0.231,0.224,0.214,0.222,0.216,0.215,0.203,0.148,0.147,0.139,0.131]
+# 2 — bandwidth: a tie, not a win (conservative 5-seed / 3000-test numbers, with error bars)
+c   = [0.05, 0.10, 0.15, 0.20, 0.30, 0.50, 1.00]
+p   = [0.173, 0.181, 0.184, 0.159, 0.152, 0.147, 0.115]
+err = [0.049, 0.051, 0.042, 0.043, 0.038, 0.025, 0.017]
 fig, ax = plt.subplots(figsize=(8.4, 4.4))
-ax.axhspan(0.167-0.030, 0.167+0.030, color=GREEN, alpha=0.14)
-ax.axhline(0.167, color=GREEN, lw=1.4, label="tuned classical (XGBoost ≈0.17)")
-ax.plot(c, p, "-o", color=TEAL, lw=2.4, ms=5, label="quantum angle kernel")
+ax.axhspan(0.167-0.030, 0.167+0.030, color=GREEN, alpha=0.16)
+ax.axhline(0.167, color=GREEN, lw=1.4, label="tuned classical (XGBoost 0.17 ± 0.03)")
+ax.errorbar(c, p, yerr=err, fmt="-o", color=TEAL, lw=2.2, ms=6, capsize=4, label="quantum angle kernel (± std)")
 ax.axvline(0.083, ls="--", color=AMBER, lw=1.6)
-ax.text(0.083, 0.238, " c = 1/√(n·d) = 0.083\n (derived, no sweep)", color=AMBER, fontsize=11, va="top")
-ax.annotate("untuned baseline\n0.131", (1.0, 0.131), (0.62, 0.150), color=TEAL,
+ax.text(0.095, 0.205, "geometric rule\nc = 1/√(n·d) = 0.083", color=AMBER, fontsize=10.5, va="top")
+ax.annotate("untuned\n0.115", (1.0, 0.115), (0.60, 0.128), color=TEAL,
             fontsize=11, arrowprops=dict(arrowstyle="->", color=TEAL))
-ax.annotate("sweet spot ≈0.23", (0.10, 0.231), (0.18, 0.245), color=NAVY, fontsize=11,
-            arrowprops=dict(arrowstyle="->", color=NAVY))
+ax.annotate("peak ~0.18 — a tie:\nerror bars overlap classical", (0.15, 0.184), (0.30, 0.235),
+            color=NAVY, fontsize=10.5, arrowprops=dict(arrowstyle="->", color=NAVY))
 ax.set_xlabel("bandwidth  c  (encoding-angle scale)"); ax.set_ylabel("PR-AUC")
-ax.set_title("One knob — bandwidth — pulls quantum level with classical", fontweight="bold")
-ax.set_ylim(0.10, 0.255); ax.legend(loc="lower center", frameon=False, fontsize=11)
+ax.set_title("Bandwidth pulls quantum LEVEL with classical — a tie, not a win", fontweight="bold")
+ax.set_ylim(0.09, 0.26); ax.legend(loc="lower center", frameon=False, fontsize=10)
 ax.spines[["top", "right"]].set_visible(False)
 save(fig, "02_bandwidth.png")
 

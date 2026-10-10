@@ -9,7 +9,8 @@ os.makedirs("pitch_assets", exist_ok=True)
 NAVY = "#102B32"; TEAL = "#1A9E8F"; RED = "#C0564A"; GREY = "#8A978F"; AMBER = "#C9962B"
 plt.rcParams["font.family"] = "DejaVu Sans"
 
-fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.5, 5.0), sharey=True)
+fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.0, 5.0), sharey=True,
+                               gridspec_kw={"wspace": 0.35})
 fig.patch.set_facecolor("white")
 
 # ── left: tuned c=0.1 — three full-shot runs, scattered
@@ -24,7 +25,7 @@ for (name, v), x in zip(tuned, xs):
     axL.text(x, 0.02, name, ha="center", fontsize=10, color="#6B756F", rotation=0)
 axL.annotate("above the noiseless sim →\nnoise, not a win", (3, 0.395), (1.25, 0.375),
              fontsize=10.5, color=RED, arrowprops=dict(arrowstyle="->", color=RED))
-axL.set_title("Bandwidth-tuned (c=0.1)\n3 full-shot runs scatter 0.18–0.40 — noise-dominated",
+axL.set_title("Tuned (c=0.1): noise-dominated\nscatter 0.18–0.40",
               fontsize=12.5, color=NAVY, fontweight="bold")
 axL.set_ylabel("PR-AUC on hardware", fontsize=12)
 axL.set_xlim(0.3, 4.7); axL.set_xticks([])
@@ -41,7 +42,7 @@ for (name, v), x in zip(robust, xr):
     axR.text(x, 0.02, name, ha="center", fontsize=9, color="#6B756F")
 axR.annotate("near-zero drift\n(0.007–0.018)", (2, 0.111), (1.2, 0.30),
              fontsize=10.5, color=TEAL, arrowprops=dict(arrowstyle="->", color=TEAL))
-axR.set_title("Robust (c=1)\nholds within ±0.01 — the reliable config",
+axR.set_title("Robust (c=1): reliable\nholds within ±0.01",
               fontsize=13, color=NAVY, fontweight="bold")
 axR.set_xlim(0.3, 4.6); axR.set_xticks([])
 axR.spines[["top", "right", "bottom", "left"]].set_visible(False)
