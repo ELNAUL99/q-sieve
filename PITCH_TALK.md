@@ -25,14 +25,14 @@ Let's be honest. Everyone here knows that today, on real data, a quantum kernel 
 **② The testbed + scope**
 The data: IBM's anti-money-laundering set, five million payments, 388,000 flagged account-weeks, almost all innocent. We're not solving money-laundering, or clearing the whole queue. One narrow job: clear only the windows we're confidently sure are innocent, so analysts focus on the uncertain ones. The kernel answers one thing: how similar are two windows?
 
-**③ How it works (30 seconds)**
-Each window becomes a quantum state; the kernel is how much two states overlap — identical, one; opposite, zero. The catch: rotate the data too far, and every window looks equally different. The kernel goes blind. How far you rotate is the bandwidth. Hold that word.
+**③ The floor**
+Before any score, one number. Of the 388,000 flagged windows, about 1% are actually suspicious — that's the real queue. The table we score keeps all four thousand suspicious windows and caps the innocent at forty thousand, so it's 9.3% suspicious. A model ranking at random scores exactly that: 0.093. That's the floor. Every number after this starts there.
 
 **④ The fair loss**
-The fair fight first. Random guessing scores 0.09 — because about one in ten of these windows is truly suspicious. That's the floor; above it is real skill. The tuned tree scores 0.19. Our quantum kernel, 0.12 — above chance, it beats the classical RBF kernel, but loses to the tree. We tried every repair: encodings, training, a hybrid. Nothing moved. Stuck.
+The fair fight first. The tuned classical tree scores 0.19; our quantum kernel, 0.12 — both above the 0.093 floor, so both are real signal, but the tree wins. We tried every repair: four encodings, training the circuit, a hybrid. Nothing moved. Stuck.
 
 **⑤ Bandwidth — the fix**
-Then we found it: the bandwidth was wrong, the kernel blind. We shrank the angles, and it jumped from 0.12 to 0.18 — level with the tree's 0.17. A tie, within noise; not a win, and I'll say so. We swept to find it, then showed a rule, one over root n times d, predicts it exactly. We *derive* the setting instead of guessing it. That's the innovation.
+Then we found it. The features were rotations across the full range — so every pair of windows looked equally different, and the kernel went blind. That range is the bandwidth. We shrank it: the kernel jumped from 0.12 to 0.18, level with the tree's 0.17. A tie, within noise; not a win. We swept to find it, then showed a rule — one over root n times d — predicts it exactly. We *derive* the setting instead of guessing. That's the innovation.
 
 **⑥ Three real machines**
 A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held rock-solid: identical to simulation, near-zero drift. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
