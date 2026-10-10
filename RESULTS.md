@@ -260,11 +260,14 @@ the tuned kernel survive hardware noise? (c) what is our FPR, really?
 
 | selector | predicted c* | PR-AUC there | verdict |
 |---|---|---|---|
-| **Geometric rule `1/√(n·d)`** | **0.083** | **0.232** | ✅ lands on the true peak (c=0.08 → 0.232) |
+| **Geometric rule `1/√(n·d)`** | **0.083** | **0.232** | lands in the peak band of this smaller run |
 | Kernel-Target Alignment (KTA) | 1.000 | 0.131 | ❌ picked the worst bandwidth |
 
-**Finding:** the **geometric rule nails it analytically — zero compute, no sweep**
-(answers Meeri's "mostly trial-and-error"). **KTA failed** on this data: with 9.3%
+**Finding:** we swept first. The geometric rule (Shaydulin & Wild, `1/√(n·d)`)
+then lands in that peak, so the next choice does not need another sweep.
+The 0.232 in the table is the smaller 1,500-window run. The number to defend
+is the 5-seed, 3,000-window tie: **0.18 ± 0.04 vs the tree 0.17 ± 0.03**.
+**KTA failed** on this data: with 9.3%
 prevalence the `yyᵀ` target is dominated by negative-negative pairs, so centered
 alignment doesn't track what the SVM uses (it rose monotonically toward c=1, the
 opposite of PR-AUC). Would need an imbalance-weighted KTA; not worth it when the
@@ -302,6 +305,14 @@ ceiling). The low-FPR "auto-clear" framing is the right **product** story, but i
 
 ## 11 · REAL HARDWARE — bandwidth-tuned kernel on 3 QPUs: Q50 + Garnet + IBM (2026-10-09) ⭐⭐⭐
 
+**Current conclusion (read this first).** The robust c=1 kernel is the hardware
+result: Garnet 0.111 → 0.111, IBM Marrakesh 0.111 → 0.111, Q50 0.111 → 0.100,
+drift 0.007–0.018. The tuned c=0.1 kernel, full 1,024 shots, scatters
+0.183 / 0.265 / 0.395 around a 0.231 simulator. IBM at 0.395 is above the
+noiseless simulator, so that run is noise. Do not average it, and do not say it
+held. The paragraphs below keep the lab trail, including a superseded 512-shot
+IBM row of 0.216.
+
 **Conditions:** the **bandwidth-tuned** frozen batch (`export_hw_batch --bandwidth
 0.1 --n-train 40 --n-test 40`): 6 qubits, 40 support vectors × 40 test = **1,600
 circuits**, 1,024 shots, on the **real VTT Q50** via LUMI (`run_q50.sh`). Wall time
@@ -318,7 +329,7 @@ circuits**, 1,024 shots, on the **real VTT Q50** via LUMI (`run_q50.sh`). Wall t
 
 *(All three tuned runs are full 1,024 shots. An earlier IBM 512-shot stopgap, 0.216, is dropped.)*
 
-**Finding:** the bandwidth-tuned kernel **survives real Q50 hardware with no
+**Finding (superseded — see the full-shot update below; do not quote this paragraph):** the bandwidth-tuned kernel **survives real Q50 hardware with no
 degradation** — hardware PR-AUC (0.265) matches/slightly exceeds the simulator
 baseline (0.231). The negative drop is within the noise of a 40-point test (read as
 "held," not "improved"). Drift rose to **0.116** (~6× the c=1 runs) because the
@@ -331,7 +342,7 @@ guess (0.256), consistent with #2/#6: models are pessimistic, trust the metal.
 0.111 vs tuned 0.231), so treat it as a strong directional result, not a strict
 apples-to-apples.
 
-**Three-vendor result:** the tuned kernel ran on **all three real QPUs**:
+**Three-vendor result (superseded — the IBM number here is the 512-shot run):** the tuned kernel ran on **all three real QPUs**:
 Garnet 0.183 (drop +0.049, drift 0.040, 606.9 s), ibm_fez 0.216 (drop +0.016,
 drift 0.080, 251.8 s, 512 shots, single job), Q50 0.265 (drop −0.033, drift 0.116,
 1,210 s). The three hardware scores **straddle** the sim baseline —
@@ -363,8 +374,8 @@ each kernel entry is close). Same batch, three full-shot runs (one per vendor)
 scatter **0.183 / 0.265 / 0.395** around sim 0.231 — a **0.18–0.40 spread**. **Revised conclusion:** the
 tuned config's hardware PR-AUC is **noise-dominated at this scale — do NOT report a
 single tuned-hardware number (or an "average") as a result.** The honest, stable
-hardware validation is the **robust c=1 config** (0.111→0.111 on 3 vendors, drift
-0.007–0.018). The tuned run is a *finding about fragility*: aggressive bandwidth
+hardware validation is the **robust c=1 config** (Garnet and IBM 0.111→0.111,
+Q50 0.111→0.100, drift 0.007–0.018). The tuned run is a *finding about fragility*: aggressive bandwidth
 tuning buys simulator score but makes the on-device readout unstable. **This
 supersedes the "held on average 0.221" line above — that used the 512-shot IBM run;
 the full-shot run breaks it.**

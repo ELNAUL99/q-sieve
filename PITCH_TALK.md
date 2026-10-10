@@ -32,10 +32,10 @@ Before any score, one number. Of the 388,000 flagged windows, about 1% are actua
 The fair fight first. The tuned classical tree scores 0.19; our quantum kernel, 0.12 — both above the 0.093 floor, so both are real signal, but the tree wins. We tried every repair: four encodings, training the circuit, a hybrid. Nothing moved. Stuck.
 
 **⑤ Bandwidth — the fix**
-Then we found it. The features were rotations across the full range — so every pair of windows looked equally different, and the kernel went blind. That range is the bandwidth. We shrank it: the kernel jumped from 0.12 to 0.18, level with the tree's 0.17. A tie, within noise; not a win. We swept to find it, then showed a rule — one over root n times d — predicts it exactly. We *derive* the setting instead of guessing. That's the innovation.
+Then we found it. The features were rotations across the full range — so every pair of windows looked equally different, and the kernel went blind. That range is the bandwidth. We shrank it: the kernel jumped from 0.12 to 0.18, level with the tree's 0.17. A tie, within noise; not a win. We swept to find it, then showed a known rule — one over root n times d, from Shaydulin and Wild — lands in that peak. The next choice does not need another sweep. That's the innovation.
 
 **⑥ Three real machines**
-A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held rock-solid: Garnet and IBM reproduced the simulator exactly, Q50 off a single point, near-zero drift on all three. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
+A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held: Garnet and IBM reproduced the simulator exactly, Q50 off a single point, drift under 0.02. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
 
 **⑦ The demo**
 And it's live — a working trust layer: ranked queue, auto-clear, an audit line per decision, and the three-machine table. Real data. 〔Point at the two links. Code: github.com/ELNAUL99/q-sieve. Live dashboard: elnaul99.github.io/q-sieve.〕

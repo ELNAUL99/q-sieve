@@ -1,10 +1,19 @@
 # Q-SIEVE
 
-A trust layer for anti-money-laundering (AML) alert triage, with a quantum kernel
-at its core. A bank's system already *flags* high-velocity accounts; an analyst
-checks each by hand, and ~95% are innocent. Q-SIEVE auto-clears the ones it is
-**confidently** sure are legitimate. It only ever *removes* work; it never
-accuses, escalates, or closes a suspicious case.
+A trust layer for anti-money-laundering alert triage. The quantum piece computes
+how similar two flagged windows are. A classical model ranks. The trust layer
+may only auto-clear a window it is confidently sure is legitimate. It never
+accuses, and it never closes a suspicious case.
+
+On IBM's public AML set there are about 388,000 flagged account-weeks, and
+about 99% of them are innocent. The table we score keeps all 4,084 suspicious
+windows and 40,000 innocent ones, so a random rank scores 0.093. Untuned, the
+tree leads (0.19 vs 0.12). After bandwidth, quantum is level with the tree
+(0.18 ± 0.04 vs 0.17 ± 0.03), a tie. At a safe error bar, both clear zero
+windows. The robust 6-qubit kernel ran on IQM Garnet, IBM Marrakesh, and VTT
+Q50: 0.111, 0.111, and 0.100.
+
+Live demo (the pitch dashboard): https://elnaul99.github.io/q-sieve/
 
 Submission for the Quantum × Finance Hackathon (Hanken).
 
@@ -62,7 +71,8 @@ Rebuild the real data: download the IBM AML HI-Small dataset to
 .venv/Scripts/python.exe quantum_demo.py            # see one kernel run
 .venv/Scripts/python.exe sweep.py                   # compare encodings
 .venv/Scripts/python.exe benchmark.py               # fair vs tuned classical
-.venv/Scripts/python.exe -m streamlit run app.py    # the dashboard
+.venv/Scripts/python.exe -m streamlit run app.py    # local lab app
+# pitch dashboard: q-sieve-demo/index-real.html, also the live link above
 ```
 
 Hardware runs use the isolated `.venv-iqm` / `.venv-ibm` — see `QUANTUM_GUIDE.md`.

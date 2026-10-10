@@ -53,7 +53,7 @@ save(fig, "02_bandwidth.png")
 
 # 3 — tuned kernel on three real QPUs
 vendors = ["IQM Garnet", "IBM ibm_fez", "VTT Q50"]
-hw = [0.183, 0.216, 0.265]; sim = 0.231
+hw = [0.183, 0.395, 0.265]; sim = 0.231
 x = np.arange(len(vendors))
 fig, ax = plt.subplots(figsize=(8.4, 4.4))
 ax.axhline(sim, color=GREY, lw=1.6, ls="--")
@@ -61,11 +61,9 @@ ax.text(2.42, sim+0.004, "simulator 0.231", color="#6B756F", fontsize=11, ha="ri
 b = ax.bar(x, hw, color=[TEAL, NAVY, "#3BA99C"], width=0.52)
 for r, v in zip(b, hw):
     ax.text(r.get_x()+r.get_width()/2, v+0.004, f"{v:.3f}", ha="center", fontweight="bold")
-ax.axhline(0.221, color=AMBER, lw=1.4)
-ax.text(0.0, 0.221+0.004, "3-vendor average 0.221 ≈ sim", color=AMBER, fontsize=11)
-ax.set_xticks(x); ax.set_xticklabels(vendors); ax.set_ylim(0, 0.30)
+ax.set_xticks(x); ax.set_xticklabels(vendors); ax.set_ylim(0, 0.48)
 ax.set_ylabel("PR-AUC (hardware)")
-ax.set_title("Bandwidth-tuned kernel on three real QPUs — held on average", fontweight="bold")
+ax.set_title("Tuned kernel on three QPUs — scatter, not a held result", fontweight="bold")
 ax.spines[["top", "right"]].set_visible(False)
 save(fig, "03_hardware_tuned.png")
 

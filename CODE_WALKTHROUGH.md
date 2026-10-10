@@ -8,19 +8,18 @@ explained line by line. No prior quantum knowledge assumed.
 ## 0. The one-paragraph summary
 
 Q-SIEVE helps a bank's anti-money-laundering (AML) analyst. The bank already
-*flags* suspicious accounts; a human then checks each flag by hand, and ~95% turn
-out innocent. Q-SIEVE auto-clears the ones it's **confidently** sure are innocent
-so the analyst never sees them. Inside it, a **quantum kernel** does one job:
-measure how *similar* two accounts are. We tested, honestly, whether quantum
-helps — and found **classical (XGBoost) wins on this data**, but the quantum
-kernel is real and **runs on real hardware with zero degradation**. The honesty
-*is* the pitch.
+*flags* account-weeks; about 388,000 of them, and about 99% are innocent. The
+table we score keeps all 4,084 suspicious windows and 40,000 innocent ones, so
+random PR-AUC is 0.093. Inside it, a **quantum kernel** does one job: measure
+how *similar* two windows are. Untuned, the tree wins. After bandwidth, quantum
+is level with the tree. The robust 6-qubit kernel ran on three real machines.
+Safe auto-clear, at a 1% error bar, clears nothing. The honesty *is* the pitch.
 
 **The headline numbers** (PR-AUC — explained in §7; random guessing = 0.093):
-- Tuned **XGBoost: 0.190** ← best
-- **Quantum (angle): 0.125** ← beats the classical RBF kernel, loses to the tree
-- Classical **RBF: 0.097**
-- On **real hardware** (IQM Garnet + IBM): quantum result **unchanged** (0.111 → 0.111).
+- Untuned fight: **XGBoost 0.190**, quantum angle **0.125**, RBF **0.097**
+- After bandwidth, 5 seeds, 3,000 test windows: quantum **0.18 ± 0.04**, tree **0.17 ± 0.03** — a tie
+- Robust hardware, 6 qubits: Garnet **0.111 → 0.111**, IBM Marrakesh **0.111 → 0.111**, Q50 **0.111 → 0.100**
+- Tuned hardware scatters **0.183 / 0.265 / 0.395** around a 0.231 simulator. The 0.395 is noise.
 
 ---
 
@@ -246,15 +245,17 @@ zero launderers. PR-AUC focuses on the rare positive. Reference points:
 
 | Model | PR-AUC | What it is |
 |---|---|---|
-| XGBoost (tuned) | **0.190** | classical tree — the winner |
-| Quantum (angle) | 0.125 | our kernel — beats RBF, loses to tree |
+| XGBoost (tuned) | **0.190** | classical tree — wins the untuned fight |
+| Quantum (angle, c=1) | 0.125 | untuned kernel — beats RBF, loses to the tree |
+| Quantum (angle, c≈0.1) | **0.18 ± 0.04** | bandwidth-tuned — level with the tree (0.17 ± 0.03), a tie |
 | RBF (tuned) | 0.097 | classical kernel |
 | random | 0.093 | floor |
 
-*Why these numbers:* everything sits close to the 0.093 floor because the
-**features** (12 behavioural numbers on weekly windows) just don't carry strong
-signal on this dataset. We proved it isn't the quantum knobs: scaling, encoding,
-and training all move results *within the noise band*. The ceiling is the data.
+*Why these numbers:* the untuned kernel sits close to the 0.093 floor because
+features were rotations across the full range, so every pair looked equally
+different. Shrinking that bandwidth is the knob that moved the score, from
+0.125 to about 0.18, level with the tree. Encoding, circuit training, and a
+hybrid did not. The features are still a low ceiling. The tie is not a win.
 
 **What we compared across experiments:**
 - `sweep.py` — encodings (ZZ / angle / amplitude / trained / PCA). → amplitude &
@@ -315,7 +316,7 @@ has more qubits; we only use 6 on each.)
    all disciplined with seed-repeats and noise-aware ranking.
 6. Did a **fair** benchmark vs *tuned* XGBoost/RBF → classical wins honestly.
 7. Analysed NISQ noise → chose **angle encoding** for hardware.
-8. Ran on **two real quantum computers** (IQM Garnet, IBM Heron) → zero degradation.
+8. Ran the robust 6-qubit kernel on **three real quantum computers** (IQM Garnet, IBM Marrakesh, VTT Q50): 0.111, 0.111, 0.100.
 9. Cleaned the code into one-responsibility-per-file and logged every result.
 
 ---
@@ -339,11 +340,9 @@ has more qubits; we only use 6 on each.)
 
 ## 11. The honest one-liner for the jury
 
-> *"We built an auditable AML trust layer, tested a quantum kernel inside it
-> fairly, and found classical wins today — but we validated the quantum kernel on
-> two real quantum computers with zero degradation, and showed exactly the regime
-> (label scarcity, bigger feature spaces, fault-tolerant hardware) where quantum
-> would start to pay off."*
+> *"Untuned, the tree wins, 0.19 to 0.12. Bandwidth brings the quantum kernel
+> level with the tree, 0.18 to 0.17, a tie. The robust kernel held on three real
+> machines: 0.111, 0.111, and 0.100. At a safe bar, both models clear zero."*
 
 That honesty, backed by real-hardware results, is the strongest thing you can
 show people who know this field.
