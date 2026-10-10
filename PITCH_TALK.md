@@ -38,7 +38,7 @@ Then we found it. The features were rotations across the full range — so every
 A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held rock-solid: Garnet and IBM reproduced the simulator exactly, Q50 off a single point, near-zero drift on all three. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
 
 **⑦ The demo**
-And it's live — a working trust layer: ranked queue, auto-clear, an audit line per decision, and the three-machine table. Real data.
+And it's live — a working trust layer: ranked queue, auto-clear, an audit line per decision, and the three-machine table. Real data. 〔Point at the two links. Code: github.com/ELNAUL99/q-sieve. Live dashboard: elnaul99.github.io/q-sieve.〕
 
 **⑧ What we won't claim**
 Let me close with what we *won't* claim. It doesn't empty the queue today — at a safe bar, both models clear zero, and the tree is faster. We say that before you ask. The honest map *is* the contribution: why it was stuck, the derived fix, three real machines. It tells a bank *when* quantum is worth the bet. Diagnose, derive, validate. Thank you.
