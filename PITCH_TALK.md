@@ -17,43 +17,31 @@ Numbers you may say out loud, and the ones you must not upgrade:
 
 ---
 
-## The talk
+## The talk  (~2:40 — safely under the hard 3:00 cap. Speak at a normal pace; this leaves buffer. Beat ⑦ is the first thing to cut if you run long.)
 
-**① The stuck place** 〔the hook — why anyone should listen〕
+**① The stuck place**
+Let's be honest. Everyone here knows that today, on real data, a quantum kernel usually can't beat tuned classical. So why are we here? The real question isn't who wins today — it's how *close* quantum gets, *why*, and whether the fix survives real hardware. We went and found out.
 
-Let's be honest with each other for a second. Everyone in this room already knows that in 2026, on real data, a quantum kernel usually can't beat a well-tuned classical one. So why are we even here? Why isn't this a *Classical* × Finance hackathon?
+**② The testbed + scope**
+The data: IBM's anti-money-laundering set, five million payments, 388,000 flagged account-weeks, almost all innocent. We're not solving money-laundering, or clearing the whole queue. One narrow job: clear only the windows we're confidently sure are innocent, so analysts focus on the uncertain ones. The kernel answers one thing: how similar are two windows?
 
-Here's the honest answer. People love to draw quantum as a curve that eventually crosses the classical line. On a problem like ours, that curve actually bends the wrong way — more data makes the kernel more *expensive*, and no more accurate. That's the stuck place. And instead of hiding from it, we made it the whole project: one real financial dataset, and three questions — how close can a quantum kernel get, why was it losing, and does the fix survive once you leave the simulator?
+**③ How it works (30 seconds)**
+Each window becomes a quantum state; the kernel is how much two states overlap — identical, one; opposite, zero. The catch: rotate the data too far, and every window looks equally different. The kernel goes blind. How far you rotate is the bandwidth. Hold that word.
 
-**② The testbed, in one breath** 〔business, kept short〕
+**④ The fair loss**
+The fair fight first. Random guessing scores 0.09 — because about one in ten of these windows is truly suspicious. That's the floor; above it is real skill. The tuned tree scores 0.19. Our quantum kernel, 0.12 — above chance, it beats the classical RBF kernel, but loses to the tree. We tried every repair: encodings, training, a hybrid. Nothing moved. Stuck.
 
-The data is IBM's anti-money-laundering set — five million payments, about 388,000 flagged account-weeks, almost all of them innocent people. The bank already has something that flags. What it doesn't have is permission to *remove* work. And let's be clear about scope: we're not claiming to solve money-laundering, or even to clear the whole queue. We do one narrow, honest thing — take the flagged windows an analyst would clear by hand, and clear only the ones we're confidently sure are innocent, so the analyst spends their time on the genuinely uncertain ones. It only removes work. It never accuses. It logs every call. And the quantum computer does exactly one job inside it: how similar are two account-weeks?
+**⑤ Bandwidth — the fix**
+Then we found it: the bandwidth was wrong, the kernel blind. We shrank the angles, and it jumped from 0.12 to 0.18 — level with the tree's 0.17. A tie, within noise; not a win, and I'll say so. We swept to find it, then showed a rule, one over root n times d, predicts it exactly. We *derive* the setting instead of guessing it. That's the innovation.
 
-**③ Thirty seconds on how it works** 〔the math — makes everything after it land〕
+**⑥ Three real machines**
+A simulator tie is cheap, so we ran it on three real quantum computers — IQM, IBM, VTT's Q50. The robust config held rock-solid: identical to simulation, near-zero drift. Then the honest part — the aggressive tuned version bounced from 0.18 to 0.40, one run even *above* the noiseless simulator, which is impossible. It amplifies noise. Tuning buys simulator score, costs hardware stability. The robust config is the one that runs.
 
-That one job is the whole story, so give me thirty seconds. We turn each account into a quantum state. The kernel is just how much two of those states overlap — identical accounts, overlap one; opposite accounts, zero. Now here's the catch, and remember it: if you rotate the data too far, every account spreads to opposite corners and they all look equally different. The kernel goes blind. How far you rotate is one number — the bandwidth. Hold that word.
+**⑦ The demo**
+And it's live — a working trust layer: ranked queue, auto-clear, an audit line per decision, and the three-machine table. Real data.
 
-**④ The fair loss** 〔progress, and why we kept going〕
-
-Okay — the numbers. We ran the fair fight first, before we touched anything quantum. Same data, same 200 training windows, a properly-tuned classical tree. The tree scored 0.19. Our quantum kernel scored 0.12. Random guessing here is 0.09, so it's real signal — it even beats the classical RBF kernel — but it loses to the tree. We could've stopped and shown you a prettier slide. Instead we asked why, and tried every repair: four encodings, training the circuit, a hybrid. Ninety-three windows moved; the score didn't. It really looked stuck.
-
-**⑤ Bandwidth — the fix** 〔the technical heart〕
-
-Then we found it. Remember the bandwidth — how far we rotate? Ours was wrong. We'd stretched every feature across the full range, and the kernel was blind, exactly like I showed you. We shrank the angles to about a tenth — and the same kernel jumped from 0.12 to 0.18. On the same splits, the tree sits at 0.17. The error bars overlap, so I'll say it plainly: quantum didn't *beat* the tree — it drew level. We found that sweet spot by sweeping — but then we showed a geometric rule, one over root n-times-d, predicts it exactly: 0.083, right on the measured peak. So the next person doesn't have to search at all. The innovation isn't a bigger score — it's that we *derive* the setting instead of guessing it, and prove it on real hardware. That's the curve climbing back toward the line.
-
-**⑥ Three real machines** 〔quantum used in practice〕
-
-But a simulator tie is cheap. So we put the kernel on three real quantum computers — Garnet, IBM, and VTT's Q50 — properly: simulator, then noise model, then the chip. The **robust** six-qubit config held rock-solid — Garnet and IBM reproduced the simulator *exactly*, 0.111 to 0.111, Q50 off by a single point, near-zero drift on all three. That's the hardware result we trust.
-
-And here's the honest part. We also pushed the aggressive bandwidth-tuned kernel onto hardware — and its score bounced from 0.18 all the way to 0.40 across the three vendors. The IBM run even came back *above* the noiseless simulator, which is impossible for a real signal. We traced it: the tuned model is near-degenerate, so tiny readout noise gets amplified into huge swings. That's not a failure to hide — it's the finding. Aggressive tuning buys simulator score and costs you stability on the metal. The robust config is the one that runs.
-
-**⑦ The demo** 〔the live product〕
-
-And it's all live. A working trust layer — the ranked queue, the auto-clear, an audit line for every decision, and the evaluation page with that three-machine table. Real data, real results.
-
-**⑧ What we won't claim — and why that's the point** 〔close + honesty〕
-
-So let me close by telling you what we *won't* claim. This doesn't empty the analyst's queue today — at the threshold we'd actually ship, both models safely clear zero. And the tree is faster — a tenth of a second against eighteen for the kernel. We're telling you that before you ask. Because the honest map *is* the contribution: we found why the kernel was stuck, we derived the fix instead of guessing it, and we proved it runs on three real machines. The curve hasn't crossed the line yet — but we found the line, and we know which way the curve is moving. And that map has a price tag: it tells a bank exactly *when* quantum becomes worth investing in for compliance — a timing call worth millions. Diagnose, derive, validate. Team Q-SIEVE. Thank you.
+**⑧ What we won't claim**
+Let me close with what we *won't* claim. It doesn't empty the queue today — at a safe bar, both models clear zero, and the tree is faster. We say that before you ask. The honest map *is* the contribution: why it was stuck, the derived fix, three real machines. It tells a bank *when* quantum is worth the bet. Diagnose, derive, validate. Thank you.
 
 ---
 
