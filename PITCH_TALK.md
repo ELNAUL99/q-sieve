@@ -39,7 +39,7 @@ Okay — the numbers. We ran the fair fight first, before we touched anything qu
 
 **⑤ Bandwidth — the fix** 〔the technical heart〕
 
-Then we found it. Remember the bandwidth — how far we rotate? Ours was wrong. We'd stretched every feature across the full range, and the kernel was blind, exactly like I showed you. We shrank the angles to about a tenth — and the same kernel jumped from 0.12 to 0.18. On the same splits, the tree sits at 0.17. The error bars overlap, so I'll say it plainly: quantum didn't *beat* the tree — it drew level. And we refused to find that scale by fiddling knobs. We derived it — one over root n-times-d — which predicts 0.083, and the measured peak sits right there. No trial and error. That's the curve climbing back toward the line.
+Then we found it. Remember the bandwidth — how far we rotate? Ours was wrong. We'd stretched every feature across the full range, and the kernel was blind, exactly like I showed you. We shrank the angles to about a tenth — and the same kernel jumped from 0.12 to 0.18. On the same splits, the tree sits at 0.17. The error bars overlap, so I'll say it plainly: quantum didn't *beat* the tree — it drew level. We found that sweet spot by sweeping — but then we showed a geometric rule, one over root n-times-d, predicts it exactly: 0.083, right on the measured peak. So the next person doesn't have to search at all. The innovation isn't a bigger score — it's that we *derive* the setting instead of guessing it, and prove it on real hardware. That's the curve climbing back toward the line.
 
 **⑥ Three real machines** 〔quantum used in practice〕
 
@@ -53,7 +53,7 @@ And it's all live. A working trust layer — the ranked queue, the auto-clear, a
 
 **⑧ What we won't claim — and why that's the point** 〔close + honesty〕
 
-So let me close by telling you what we *won't* claim. This doesn't empty the analyst's queue today — at the threshold we'd actually ship, both models safely clear zero. And the tree is faster — a tenth of a second against eighteen for the kernel. We're telling you that before you ask. Because the honest map *is* the contribution: we found why the kernel was stuck, we derived the fix instead of guessing it, and we proved it runs on three real machines. The curve hasn't crossed the line yet — but we found the line, and we know which way the curve is moving. Diagnose, derive, validate. Team Q-SIEVE. Thank you.
+So let me close by telling you what we *won't* claim. This doesn't empty the analyst's queue today — at the threshold we'd actually ship, both models safely clear zero. And the tree is faster — a tenth of a second against eighteen for the kernel. We're telling you that before you ask. Because the honest map *is* the contribution: we found why the kernel was stuck, we derived the fix instead of guessing it, and we proved it runs on three real machines. The curve hasn't crossed the line yet — but we found the line, and we know which way the curve is moving. And that map has a price tag: it tells a bank exactly *when* quantum becomes worth investing in for compliance — a timing call worth millions. Diagnose, derive, validate. Team Q-SIEVE. Thank you.
 
 ---
 
